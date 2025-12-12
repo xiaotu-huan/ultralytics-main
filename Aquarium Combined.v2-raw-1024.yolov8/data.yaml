@@ -1,9 +1,11 @@
+# Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
+
 train: ../train/images
 val: ../valid/images
 test: ../test/images
 
 nc: 7
-names: ['fish', 'jellyfish', 'penguin', 'puffin', 'shark', 'starfish', 'stingray']
+names: ["fish", "jellyfish", "penguin", "puffin", "shark", "starfish", "stingray"]
 
 roboflow:
   workspace: brad-dwyer

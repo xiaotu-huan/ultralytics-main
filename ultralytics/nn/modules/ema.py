@@ -1,13 +1,15 @@
+# Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
+
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
-from .conv import Conv  # 导入YOLO的Conv类
 from .block import Bottleneck, C3k  # 导入官方的Bottleneck和C3k
+from .conv import Conv  # 导入YOLO的Conv类
+
 
 class EMA(nn.Module):
     def __init__(self, channels, c2=None, factor=32):
-        super(EMA, self).__init__()
+        super().__init__()
         self.groups = factor
         assert channels // self.groups > 0
         self.softmax = nn.Softmax(-1)
@@ -34,45 +36,51 @@ class EMA(nn.Module):
         weights = (torch.matmul(x11, x12) + torch.matmul(x21, x22)).reshape(b * self.groups, 1, h, w)
         return (group_x * weights.sigmoid()).reshape(b, c, h, w)
 
+
 class Bottleneck_EMA(Bottleneck):
-    """Bottleneck with EMA attention - 替换Bottleneck_CBAM"""
+    """Bottleneck with EMA attention - 替换Bottleneck_CBAM."""
+
     def __init__(self, c1, c2, shortcut=True, g=1, k=(3, 3), e=0.5):
         # 完全匹配官方Bottleneck的参数
         super().__init__(c1, c2, shortcut, g, k, e)
-        self.ema = EMA(c2)  
+        self.ema = EMA(c2)
 
     def forward(self, x):
         x1 = super().forward(x)
         return self.ema(x1)  # 在最后一个Bottleneck输出应用EMA
 
+
 class C3k_EMA(nn.Module):
-    """C3k with EMA attention in the last bottleneck - 替换C3k_CBAM"""
+    """C3k with EMA attention in the last bottleneck - 替换C3k_CBAM."""
+
     def __init__(self, c1, c2, n=1, shortcut=True, g=1, e=0.5, k=3):
         super().__init__()
         c_ = int(c2 * e)
-        
+
         # 创建前n-1个普通Bottleneck
         modules = []
         for i in range(n - 1):
             modules.append(Bottleneck(c_, c_, shortcut, g, k=(k, k), e=1.0))
-        
+
         # 最后一个使用带EMA的Bottleneck
         if n > 0:
             modules.append(Bottleneck_EMA(c_, c_, shortcut, g, k=(k, k), e=1.0))
-        
+
         self.m = nn.Sequential(*modules)
 
     def forward(self, x):
         return self.m(x)
 
+
 class C3k2_EMA(nn.Module):
-    """C3k2 module with EMA attention in the last bottleneck - 替换C3k2_CBAM"""
+    """C3k2 module with EMA attention in the last bottleneck - 替换C3k2_CBAM."""
+
     def __init__(self, c1, c2, n=1, c3k=False, shortcut=True, g=1, e=0.5):
         super().__init__()
         self.c = int(c2 * e)
         self.cv1 = Conv(c1, 2 * self.c, 1, 1)
         self.cv2 = Conv((2 + n) * self.c, c2, 1) if shortcut else Conv(2 * self.c, c2, 1)
-        
+
         self.m = nn.ModuleList()
         for i in range(n):
             if i == n - 1:  # 最后一个瓶颈层带EMA
