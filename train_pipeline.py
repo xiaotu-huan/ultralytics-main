@@ -1,3 +1,5 @@
+# Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
+
 from ultralytics import YOLO
 
 model = YOLO("yolov8n.pt")
@@ -6,5 +8,5 @@ model.train(
     epochs=100,
     imgsz=640,
     batch=16,
-    name='pipe_defect_detection'
+    name="pipe_defect_detection",
 )
