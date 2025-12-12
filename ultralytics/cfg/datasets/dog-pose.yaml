@@ -19,6 +19,5 @@ kpt_shape: [24, 3] # number of keypoints, number of dims (2 for x,y or 3 for x,y
 # Classes
 names:
   0: dog
-
 # Download script/URL (optional)
 # download: https://github.com/ultralytics/assets/releases/download/v0.0.0/dog-pose.zip
