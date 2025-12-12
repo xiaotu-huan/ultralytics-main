@@ -1,0 +1,62 @@
+# YOLO11n with P2 + Slim-Neck (Direct Combination)
+nc: 6
+depth_multiple: 0.33
+width_multiple: 0.25
+
+anchors:
+  - [4,5, 8,10, 13,16]      # P2/4
+  - [16,30, 33,23, 30,61]   # P3/8
+  - [30,61, 62,45, 59,119]  # P4/16
+  - [61,119, 116,90, 156,198] # P5/32
+
+scales:
+  n: [0.50, 0.25, 1024]
+
+# Backbone
+backbone:
+  - [-1, 1, Conv, [64, 3, 2]] # 0-P1/2
+  - [-1, 1, Conv, [128, 3, 2]] # 1-P2/4
+  - [-1, 2, C3k2, [256, False, 0.25]] # 2
+  - [-1, 1, Conv, [256, 3, 2]] # 3-P3/8
+  - [-1, 2, C3k2, [512, False, 0.25]] # 4
+  - [-1, 1, Conv, [512, 3, 2]] # 5-P4/16
+  - [-1, 2, C3k2, [512, True]] # 6
+  - [-1, 1, Conv, [1024, 3, 2]] # 7-P5/32
+  - [-1, 2, C3k2, [1024, True]] # 8
+  - [-1, 1, SPPF, [1024, 5]] # 9
+  - [-1, 2, C2PSA, [1024]] # 10
+
+# Head: P2 + Slim-Neck Combined
+head:
+  # P5 -> P4 (Slim-Neck style)
+  - [-1, 1, nn.Upsample, [None, 2, "nearest"]] # 11
+  - [[-1, 6], 1, Concat, [1]] # 12
+  - [-1, 1, VoV_GSCSP, [512, 1]] # 13
+
+  # P4 -> P3 (Slim-Neck style)
+  - [-1, 1, nn.Upsample, [None, 2, "nearest"]] # 14
+  - [[-1, 4], 1, Concat, [1]] # 15
+  - [-1, 1, VoV_GSCSP, [256, 1]] # 16 (P3/8-small)
+
+  # P3 -> P2 (P2 layer addition)
+  - [-1, 1, nn.Upsample, [None, 2, "nearest"]] # 17
+  - [[-1, 2], 1, Concat, [1]] # 18
+  - [-1, 1, VoV_GSCSP, [192, 1]] # 19 (P2/4-xsmall)
+
+  # P2 -> P3 (P2 layer addition)
+  - [-1, 1, GSConv, [192, 3, 2]] # 20
+  - [[-1, 16], 1, Concat, [1]] # 21
+  - [-1, 1, VoV_GSCSP, [256, 1]] # 22
+
+  # P3 -> P4 (Slim-Neck style)
+  - [-1, 1, GSConv, [256, 3, 2]] # 23
+  - [[-1, 13], 1, Concat, [1]] # 24
+  - [-1, 1, VoV_GSCSP, [512, 1]] # 25 (P4/16-medium)
+
+  # P4 -> P5 (Slim-Neck style)
+  - [-1, 1, GSConv, [512, 3, 2]] # 26
+  - [[-1, 10], 1, Concat, [1]] # 27
+  - [-1, 1, VoV_GSCSP, [1024, 1]] # 28 (P5/32-large)
+
+  # Detect with P2
+  - [[19, 22, 25, 28], 1, Detect, [nc]] # Detect(P2, P3, P4, P5)

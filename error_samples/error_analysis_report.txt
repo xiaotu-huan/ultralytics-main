@@ -1,0 +1,14 @@
+管道缺陷检测错误分析报告
+========================
+
+目标类别: ['Rupture', 'Deformation']
+验证集图像: 4424 张
+
+错误统计:
+low_confidence: 1100 个样本
+missed_detections: 3960 个样本
+potential_errors: 1364 个样本
+
+按类别详细统计:
+Rupture: 1100 个低置信度样本
+Deformation: 0 个低置信度样本

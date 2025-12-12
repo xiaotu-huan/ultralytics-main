@@ -1,0 +1,19 @@
+# parent
+# ├── ultralytics
+# └── datasets
+#     └── brain-tumor ← downloads here (4.21 MB)
+
+# Train/val/test sets as 1) dir: path/to/imgs, 2) file: path/to/imgs.txt, or 3) list: [path/to/imgs1, path/to/imgs2, ..]
+path: "F:/github/ultralytics-main/datasets/one"  # 使用引号确保路径为字符串
+train: images/train   # 训练图片路径（相对path）
+val: images/val
+
+# Classes
+names:
+  0: people
+  1: book
+  2: chair
+
+  # yolo task=detect mode=train model=./yolov8n.pt data="yolo-one.yaml" workers=1 epochs=50 batch=16
+
+

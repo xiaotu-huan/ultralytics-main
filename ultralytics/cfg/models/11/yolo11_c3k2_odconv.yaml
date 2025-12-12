@@ -1,0 +1,34 @@
+# yolo11_odconv.yaml
+nc: 6
+scales:
+  n: [0.50, 0.25, 1024]
+
+# YOLO11 backbone with ODConv (只在深层使用)
+backbone:
+  - [-1, 1, Conv, [64, 3, 2]]                    # 0-P1/2 浅层-标准
+  - [-1, 1, Conv, [128, 3, 2]]                   # 1-P2/4 浅层-标准  
+  - [-1, 2, C3k2, [256, False, 0.25]]            # 2      中层-标准
+  - [-1, 1, Conv, [256, 3, 2]]                   # 3-P3/8 中层-标准
+  - [-1, 2, C3k2_ODConv, [512, False, 0.25]]     # 4      深层-ODConv
+  - [-1, 1, Conv, [512, 3, 2]]                   # 5-P4/16 深层-标准
+  - [-1, 2, C3k2_ODConv, [512, True]]            # 6      深层-ODConv
+  - [-1, 1, Conv, [1024, 3, 2]]                  # 7-P5/32 深层-标准
+  - [-1, 2, C3k2_ODConv, [1024, True]]           # 8      最深-ODConv
+  - [-1, 1, SPPF, [1024, 5]]                     # 9
+  - [-1, 2, C2PSA, [1024]]                       # 10
+
+# Head保持原样
+head:
+  - [-1, 1, nn.Upsample, [None, 2, "nearest"]]
+  - [[-1, 6], 1, Concat, [1]]
+  - [-1, 2, C3k2, [512, False]]
+  - [-1, 1, nn.Upsample, [None, 2, "nearest"]]
+  - [[-1, 4], 1, Concat, [1]]
+  - [-1, 2, C3k2, [256, False]]
+  - [-1, 1, Conv, [256, 3, 2]]
+  - [[-1, 13], 1, Concat, [1]]
+  - [-1, 2, C3k2, [512, False]]
+  - [-1, 1, Conv, [512, 3, 2]]
+  - [[-1, 10], 1, Concat, [1]]
+  - [-1, 2, C3k2, [1024, True]]
+  - [[16, 19, 22], 1, Detect, [nc]]
