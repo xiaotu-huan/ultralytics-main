@@ -1,13 +1,13 @@
+# Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
+
 path: F:/github/ultralytics-main/datasets/pipeline_defect
 train: images/train
 val: images/val
 nc: 6
-names: 
+names:
   0: Deformation
   1: Obstacle
   2: Rupture
   3: Disconnect
   4: Misalignment
   5: Deposition
-
-
