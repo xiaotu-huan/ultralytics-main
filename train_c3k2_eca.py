@@ -1,22 +1,22 @@
+# Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
+
 from ultralytics import YOLO
 
 # 构建模型并加载预训练权重
-model = YOLO("F:/github/ultralytics-main/ultralytics/cfg/models/11/c3k2_eca.yaml")  
-model.load('yolo11n.pt') 
-
-
+model = YOLO("F:/github/ultralytics-main/ultralytics/cfg/models/11/c3k2_eca.yaml")
+model.load("yolo11n.pt")
 
 
 model.train(
-    data="./pipeline.yaml",  
-    epochs=200,  
-    imgsz=640,   
-    batch=32,    
+    data="./pipeline.yaml",
+    epochs=200,
+    imgsz=640,
+    batch=32,
     lr0=0.001,
-    optimizer="SGD",      # 关键：必须明确指定为"SGD"
-    momentum=0.9,         # 动量参数（可选，但建议保持）
+    optimizer="SGD",  # 关键：必须明确指定为"SGD"
+    momentum=0.9,  # 动量参数（可选，但建议保持）
     weight_decay=0.0005,  # 权重衰减（可选）
-    name='yolo11n_c3k2_eca2'  
+    name="yolo11n_c3k2_eca2",
 )
 
 
