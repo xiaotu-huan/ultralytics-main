@@ -1,8 +1,9 @@
-nc: 6 
-scales: 
+# Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
+
+nc: 6
+scales:
   # [depth, width, max_channels]
   n: [0.50, 0.25, 1024] # summary: 181 layers, 2624080 parameters, 2624064 gradients, 6.6 GFLOPs
-
 
 # YOLO11n backbone with GhostConv
 backbone:
