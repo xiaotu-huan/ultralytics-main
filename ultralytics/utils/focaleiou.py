@@ -1,18 +1,19 @@
-# Ultralytics 🚀 Focal-EIoU Loss
+# Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
+
 # Reference: Focal-EIoU Loss: Improving Bounding Box Regression in Object Detection (Zhang et al. 2022)
 # https://arxiv.org/abs/2207.08464
 
 import torch
 import torch.nn as nn
 
+
 class FocalEIoULoss(nn.Module):
-    """
-    Focal-EIoU loss implementation for bounding box regression.
+    """Focal-EIoU loss implementation for bounding box regression.
 
     Combines Efficient IoU (EIoU) and Focal modulation to better focus on hard examples.
     """
 
-    def __init__(self, gamma: float = 0.5, reduction: str = 'mean'):
+    def __init__(self, gamma: float = 0.5, reduction: str = "mean"):
         super().__init__()
         self.gamma = gamma
         self.reduction = reduction
@@ -22,8 +23,9 @@ class FocalEIoULoss(nn.Module):
         Args:
             pred: predicted boxes [N, 4] in xyxy format
             target: ground-truth boxes [N, 4] in xyxy format
+
         Returns:
-            Focal-EIoU loss tensor
+            Focal-EIoU loss tensor.
         """
         # Ensure valid shapes
         assert pred.shape == target.shape, f"Shape mismatch: {pred.shape} vs {target.shape}"
@@ -70,9 +72,9 @@ class FocalEIoULoss(nn.Module):
         weight = (1 - iou).pow(self.gamma)
         loss = eiou * weight
 
-        if self.reduction == 'mean':
+        if self.reduction == "mean":
             return loss.mean()
-        elif self.reduction == 'sum':
+        elif self.reduction == "sum":
             return loss.sum()
         else:
             return loss
