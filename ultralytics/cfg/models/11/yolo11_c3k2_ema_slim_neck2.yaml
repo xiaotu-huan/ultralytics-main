@@ -1,3 +1,5 @@
+# Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
+
 # YOLO11n: EMA in Slim-Neck (Solution 1)
 nc: 6
 scales:
@@ -9,7 +11,7 @@ anchors: 3
 # Backbone: Use standard C3k2 (NO EMA here)
 backbone:
   # [from, repeats, module, args]
-  - [-1, 1, Conv, [64, 3, 2]]  # 0-P1/2
+  - [-1, 1, Conv, [64, 3, 2]] # 0-P1/2
   - [-1, 1, Conv, [128, 3, 2]] # 1-P2/4
   - [-1, 2, C3k2, [256, False, 0.25]] # 2
   - [-1, 1, Conv, [256, 3, 2]] # 3-P3/8
@@ -24,24 +26,24 @@ backbone:
 # Slim-Neck Head: Integrate EMA inside the neck
 head:
   # 上采样: P5 -> P4
-  - [-1, 1, nn.Upsample, [None, 2, "nearest"]]    # 11
-  - [[-1, 6], 1, Concat, [1]]                     # 12 (concat with P4 from backbone)
-  - [-1, 1, VoV_GSCSP_EMA, [512, 1]]              # 13 - 关键融合点1：使用带EMA的VoV_GSCSP
+  - [-1, 1, nn.Upsample, [None, 2, "nearest"]] # 11
+  - [[-1, 6], 1, Concat, [1]] # 12 (concat with P4 from backbone)
+  - [-1, 1, VoV_GSCSP_EMA, [512, 1]] # 13 - 关键融合点1：使用带EMA的VoV_GSCSP
 
-  # 上采样: P4 -> P3  
-  - [-1, 1, nn.Upsample, [None, 2, "nearest"]]    # 14
-  - [[-1, 4], 1, Concat, [1]]                     # 15 (concat with P3 from backbone)
-  - [-1, 1, VoV_GSCSP_EMA, [256, 1]]              # 16 (P3/8-small) - 关键融合点2
+  # 上采样: P4 -> P3
+  - [-1, 1, nn.Upsample, [None, 2, "nearest"]] # 14
+  - [[-1, 4], 1, Concat, [1]] # 15 (concat with P3 from backbone)
+  - [-1, 1, VoV_GSCSP_EMA, [256, 1]] # 16 (P3/8-small) - 关键融合点2
 
   # 下采样: P3 -> P4
-  - [-1, 1, GSConv, [256, 3, 2]]                  # 17
-  - [[-1, 13], 1, Concat, [1]]                    # 18
-  - [-1, 1, VoV_GSCSP_EMA, [512, 1]]              # 19 (P4/16-medium) - 关键融合点3
+  - [-1, 1, GSConv, [256, 3, 2]] # 17
+  - [[-1, 13], 1, Concat, [1]] # 18
+  - [-1, 1, VoV_GSCSP_EMA, [512, 1]] # 19 (P4/16-medium) - 关键融合点3
 
   # 下采样: P4 -> P5
-  - [-1, 1, GSConv, [512, 3, 2]]                  # 20
-  - [[-1, 10], 1, Concat, [1]]                    # 21
-  - [-1, 1, VoV_GSCSP_EMA, [1024, 1]]             # 22 (P5/32-large) - 关键融合点4
+  - [-1, 1, GSConv, [512, 3, 2]] # 20
+  - [[-1, 10], 1, Concat, [1]] # 21
+  - [-1, 1, VoV_GSCSP_EMA, [1024, 1]] # 22 (P5/32-large) - 关键融合点4
 
   # Detect Head
-  - [[16, 19, 22], 1, Detect, [nc]]               # 23 (P3, P4, P5)
+  - [[16, 19, 22], 1, Detect, [nc]] # 23 (P3, P4, P5)
