@@ -26,41 +26,8 @@ Examples:
 
 # from .cbam import CBAM, C3k2_CBAM, Bottleneck_CBAM # 添加这行,cbam在每一个bottleneck中
 
-
-from .cbam import CBAM, C3k2_CBAM, C3k_CBAM, Bottleneck_CBAM # cbam只放在最后一个瓶颈块中，但是要先判断是bottleneck瓶颈块，还是C3K瓶颈块
-
-
-# from .cbam import CBAM, C3k2_CBAM # 添加这行，cbam在c3k2输出端
-
-
-from .eca import ECA, Bottleneck_ECA, C3k_ECA, C3k2_ECA
-
-
-from .slim_neck import GSConv, GSBottleneck, GSBottleneck_EMA, VoV_GSCSP, VoV_GSCSP_EMA  #添加slim_neck相关
-
-
-from .bifpn import BiFPN_Concat, Conv2d_BN # 添加bifpn相关
-
-
-from .simam import SimAM, Bottleneck_SimAM, C3k_SimAM, C3k2_SimAM   # 添加SimAM注意力机制相关
-
 from .asff import Detect_ASFF  # 添加ASFF检测头模块相关
-
-
-# 添加DyHeadDetect检测头模块相关
-from .dyhead import DyHead
-from .head import DyHeadDetect
-
-# 添加PConv模块相关
-from .pconv import PConv
-
-
-from .ghostconv import C3k2_GhostConv
-
-from .odconv import C3k2_ODConv
-
-from .ema import EMA, Bottleneck_EMA, C3k2_EMA, C3k2_EMA
-
+from .bifpn import BiFPN_Concat, Conv2d_BN  # 添加bifpn相关
 from .block import (
     C1,
     C2,
@@ -104,6 +71,12 @@ from .block import (
     SCDown,
     TorchVision,
 )
+from .cbam import (  # cbam只放在最后一个瓶颈块中，但是要先判断是bottleneck瓶颈块，还是C3K瓶颈块
+    CBAM,
+    Bottleneck_CBAM,
+    C3k2_CBAM,
+    C3k_CBAM,
+)
 from .conv import (
     ChannelAttention,
     Concat,
@@ -119,10 +92,19 @@ from .conv import (
     RepConv,
     SpatialAttention,
 )
+
+# 添加DyHeadDetect检测头模块相关
+from .dyhead import DyHead
+
+# from .cbam import CBAM, C3k2_CBAM # 添加这行，cbam在c3k2输出端
+from .eca import ECA, Bottleneck_ECA, C3k2_ECA, C3k_ECA
+from .ema import EMA, Bottleneck_EMA, C3k2_EMA
+from .ghostconv import C3k2_GhostConv
 from .head import (
     OBB,
     Classify,
     Detect,
+    DyHeadDetect,
     LRPCHead,
     Pose,
     RTDETRDecoder,
@@ -132,6 +114,12 @@ from .head import (
     YOLOESegment,
     v10Detect,
 )
+from .odconv import C3k2_ODConv
+
+# 添加PConv模块相关
+from .pconv import PConv
+from .simam import Bottleneck_SimAM, C3k2_SimAM, C3k_SimAM, SimAM  # 添加SimAM注意力机制相关
+from .slim_neck import GSBottleneck, GSBottleneck_EMA, GSConv, VoV_GSCSP, VoV_GSCSP_EMA  # 添加slim_neck相关
 from .transformer import (
     AIFI,
     MLP,
@@ -146,144 +134,122 @@ from .transformer import (
 )
 
 __all__ = (
-    "Conv",
-    "Conv2",
-    "LightConv",
-    "RepConv",
-    "DWConv",
-    "DWConvTranspose2d",
-    "ConvTranspose",
-    "Focus",
-    "GhostConv",
-    "ChannelAttention",
-    "SpatialAttention",
-    "CBAM",
-    "Concat",
-    "TransformerLayer",
-    "TransformerBlock",
-    "MLPBlock",
-    "LayerNorm2d",
-    "DFL",
-    "HGBlock",
-    "HGStem",
-    "SPP",
-    "SPPF",
+    "AIFI",
     "C1",
     "C2",
-    "C3",
-    "C2f",
-    "C3k2",
-    "SCDown",
-    "C2fPSA",
     "C2PSA",
-    "C2fAttn",
-    "C3x",
+    "C3",
     "C3TR",
-    "C3Ghost",
-    "GhostBottleneck",
+    "CBAM",
+    # 添加CBAM相关模块
+    "CBAM",
+    "CIB",
+    "DFL",
+    # 添加ECA相关
+    "ECA",
+    "ELAN1",
+    "EMA",
+    "MLP",
+    "OBB",
+    "PSA",
+    "SPP",
+    "SPPELAN",
+    "SPPF",
+    "A2C2f",
+    "AConv",
+    "ADown",
+    "Attention",
+    "BNContrastiveHead",
+    # bifpn特征融合模块相关
+    "BiFPN_Concat",
     "Bottleneck",
     "BottleneckCSP",
-    "Proto",
-    "Detect",
-    "Segment",
-    "Pose",
+    "Bottleneck_CBAM",
+    "Bottleneck_ECA",
+    "Bottleneck_EMA",
+    "Bottleneck_SimAM",
+    "C2f",
+    "C2fAttn",
+    "C2fCIB",
+    "C2fPSA",
+    "C3Ghost",
+    "C3k2",
+    # "C2f_CBAM"
+    # 添加C3K2_CBAM相关模块
+    # 'CBAM',
+    "C3k2_CBAM",
+    "C3k2_ECA",
+    "C3k2_EMA",
+    "C3k2_GhostConv",
+    "C3k2_ODConv",
+    "C3k2_SimAM",
+    "C3k_CBAM",
+    "C3k_ECA",
+    "C3k_EMA",
+    "C3k_SimAM",
+    "C3x",
+    "CBAMBottleneck",
+    "CBFuse",
+    "CBLinear",
+    "ChannelAttention",
+    "ChannelAttention",
     "Classify",
-    "TransformerEncoderLayer",
-    "RepC3",
-    "RTDETRDecoder",
-    "AIFI",
+    "Concat",
+    "ContrastiveHead",
+    "Conv",
+    "Conv2",
+    "Conv2d_BN",
+    "ConvTranspose",
+    "DWConv",
+    "DWConvTranspose2d",
     "DeformableTransformerDecoder",
     "DeformableTransformerDecoderLayer",
+    "Detect",
+    # 添加ASFF检测头模块相关
+    "Detect_ASFF",
+    # 添加DyHeadDetect检测头模块相关
+    "DyHead",
+    "DyHeadDetect",
+    "Focus",
+    "GSBottleneck",
+    "GSBottleneck_EMA",
+    # 添加slim-neck相关模块
+    "GSConv",
+    "GhostBottleneck",
+    "GhostConv",
+    "HGBlock",
+    "HGStem",
+    "ImagePoolingAttn",
+    "Index",
+    "LRPCHead",
+    "LayerNorm2d",
+    "LightConv",
+    "MLPBlock",
     "MSDeformAttn",
-    "MLP",
+    "MaxSigmoidAttnBlock",
+    "PConv",
+    "Pose",
+    "Proto",
+    "RTDETRDecoder",
+    "RepC3",
+    "RepConv",
+    "RepNCSPELAN4",
+    "RepVGGDW",
     "ResNetLayer",
-    "OBB",
+    "SCDown",
+    "Segment",
+    # 添加SimAM注意力机制相关
+    "SimAM",
+    "SpatialAttention",
+    "SpatialAttention",
+    "TorchVision",
+    "TransformerBlock",
+    "TransformerEncoderLayer",
+    "TransformerLayer",
+    "VoV_GSCSP",
+    "VoV_GSCSP_EMA",
     "WorldDetect",
     "YOLOEDetect",
     "YOLOESegment",
     "v10Detect",
-    "LRPCHead",
-    "ImagePoolingAttn",
-    "MaxSigmoidAttnBlock",
-    "ContrastiveHead",
-    "BNContrastiveHead",
-    "RepNCSPELAN4",
-    "ADown",
-    "SPPELAN",
-    "CBFuse",
-    "CBLinear",
-    "AConv",
-    "ELAN1",
-    "RepVGGDW",
-    "CIB",
-    "C2fCIB",
-    "Attention",
-    "PSA",
-    "TorchVision",
-    "Index",
-    "A2C2f",
-
-    # 添加CBAM相关模块
-    "CBAM", 
-    "ChannelAttention",
-    "SpatialAttention", 
-    "CBAMBottleneck", 
-    # "C2f_CBAM"
-
-    #添加C3K2_CBAM相关模块
-    # 'CBAM', 
-    'C3k2_CBAM', 
-    'C3k_CBAM', 
-    'Bottleneck_CBAM',
-
-
-    # 添加ECA相关
-    "ECA",
-    'Bottleneck_ECA', 
-    'C3k_ECA', 
-    "C3k2_ECA",
-
-
-    # 添加SimAM注意力机制相关
-    'SimAM',
-    'Bottleneck_SimAM', 
-    'C3k_SimAM', 
-    'C3k2_SimAM',
-
-
-    # 添加slim-neck相关模块
-    "GSConv", 
-    "GSBottleneck", 
-    "GSBottleneck_EMA",
-    "VoV_GSCSP",
-    "VoV_GSCSP_EMA",
-
-
-    # bifpn特征融合模块相关
-    "BiFPN_Concat", 
-    "Conv2d_BN",
-
-
-
-    # 添加ASFF检测头模块相关
-    "Detect_ASFF",
-
-    # 添加DyHeadDetect检测头模块相关
-    'DyHead',  
-    'DyHeadDetect',  
-
-    
-
-    "PConv",
-
-
-    "C3k2_GhostConv",
-
-    "C3k2_ODConv",
-
-
-    "EMA",
-    "Bottleneck_EMA",
-    "C3k_EMA",
-    "C3k2_EMA",
 )
