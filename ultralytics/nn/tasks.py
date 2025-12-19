@@ -7,30 +7,6 @@
 
 
 # 在文件开头的导入部分添加，cbam在每一个bottleneck中
-from ultralytics.nn.modules.cbam import CBAM, C3k2_CBAM, Bottleneck_CBAM
-
-# 在文件开头的导入部分添加，cbam在c3k2输出端
-# from ultralytics.nn.modules.cbam import CBAM, C3k2_CBAM
-
-# 在文件开头的导入部分添加，eca在c3k2输出端
-from ultralytics.nn.modules.eca import ECA, Bottleneck_ECA, C3k_ECA, C3k2_ECA
-
-
-# 导入slim-neck相关模块
-from ultralytics.nn.modules.slim_neck import GSConv, GSBottleneck, GSBottleneck_EMA, VoV_GSCSP, VoV_GSCSP_EMA
-
-
-# 导入BiFPN相关模块
-from ultralytics.nn.modules.bifpn import Conv2d_BN, BiFPN_Concat
-
-
-from ultralytics.nn.modules.simam import SimAM, C3k_SimAM, C3k2_SimAM, Bottleneck_SimAM
-
-
-from ultralytics.nn.modules.ema import EMA, Bottleneck_EMA, C3k2_EMA, C3k2_EMA
-
-
-
 import contextlib
 import pickle
 import re
@@ -41,12 +17,8 @@ from pathlib import Path
 import torch
 import torch.nn as nn
 
-
-
 from ultralytics.nn.autobackend import check_class_names
 from ultralytics.nn.modules import (
-    C3k2_GhostConv,
-    C3k2_ODConv,
     AIFI,
     C1,
     C2,
@@ -70,26 +42,21 @@ from ultralytics.nn.modules import (
     C2fPSA,
     C3Ghost,
     C3k2,
+    C3k2_GhostConv,
+    C3k2_ODConv,
     C3x,
     CBFuse,
     CBLinear,
     Classify,
     Concat,
     Conv,
-
-    PConv,
-
     Conv2,
     ConvTranspose,
     Detect,
-
     Detect_ASFF,
-    
-    DyHead, 
-    DyHeadDetect,  
-
     DWConv,
     DWConvTranspose2d,
+    DyHeadDetect,
     Focus,
     GhostBottleneck,
     GhostConv,
@@ -98,6 +65,7 @@ from ultralytics.nn.modules import (
     ImagePoolingAttn,
     Index,
     LRPCHead,
+    PConv,
     Pose,
     RepC3,
     RepConv,
@@ -113,6 +81,20 @@ from ultralytics.nn.modules import (
     YOLOESegment,
     v10Detect,
 )
+
+# 导入BiFPN相关模块
+from ultralytics.nn.modules.bifpn import BiFPN_Concat, Conv2d_BN
+from ultralytics.nn.modules.cbam import CBAM, Bottleneck_CBAM, C3k2_CBAM
+
+# 在文件开头的导入部分添加，cbam在c3k2输出端
+# from ultralytics.nn.modules.cbam import CBAM, C3k2_CBAM
+# 在文件开头的导入部分添加，eca在c3k2输出端
+from ultralytics.nn.modules.eca import ECA, Bottleneck_ECA, C3k2_ECA, C3k_ECA
+from ultralytics.nn.modules.ema import EMA, Bottleneck_EMA, C3k2_EMA
+from ultralytics.nn.modules.simam import Bottleneck_SimAM, C3k_SimAM, SimAM
+
+# 导入slim-neck相关模块
+from ultralytics.nn.modules.slim_neck import GSBottleneck, GSBottleneck_EMA, GSConv, VoV_GSCSP, VoV_GSCSP_EMA
 from ultralytics.utils import DEFAULT_CFG_DICT, DEFAULT_CFG_KEYS, LOGGER, YAML, colorstr, emojis
 from ultralytics.utils.checks import check_requirements, check_suffix, check_yaml
 from ultralytics.utils.loss import (
@@ -139,11 +121,10 @@ from ultralytics.utils.torch_utils import (
 
 
 class BaseModel(torch.nn.Module):
-    """
-    Base class for all YOLO models in the Ultralytics family.
+    """Base class for all YOLO models in the Ultralytics family.
 
-    This class provides common functionality for YOLO models including forward pass handling, model fusion,
-    information display, and weight loading capabilities.
+    This class provides common functionality for YOLO models including forward pass handling, model fusion, information
+    display, and weight loading capabilities.
 
     Attributes:
         model (torch.nn.Module): The neural network model.
@@ -165,8 +146,7 @@ class BaseModel(torch.nn.Module):
     """
 
     def forward(self, x, *args, **kwargs):
-        """
-        Perform forward pass of the model for either training or inference.
+        """Perform forward pass of the model for either training or inference.
 
         If x is a dict, calculates and returns the loss for training. Otherwise, returns predictions for inference.
 
@@ -183,8 +163,7 @@ class BaseModel(torch.nn.Module):
         return self.predict(x, *args, **kwargs)
 
     def predict(self, x, profile=False, visualize=False, augment=False, embed=None):
-        """
-        Perform a forward pass through the network.
+        """Perform a forward pass through the network.
 
         Args:
             x (torch.Tensor): The input tensor to the model.
@@ -201,8 +180,7 @@ class BaseModel(torch.nn.Module):
         return self._predict_once(x, profile, visualize, embed)
 
     def _predict_once(self, x, profile=False, visualize=False, embed=None):
-        """
-        Perform a forward pass through the network.
+        """Perform a forward pass through the network.
 
         Args:
             x (torch.Tensor): The input tensor to the model.
@@ -240,8 +218,7 @@ class BaseModel(torch.nn.Module):
         return self._predict_once(x)
 
     def _profile_one_layer(self, m, x, dt):
-        """
-        Profile the computation time and FLOPs of a single layer of the model on a given input.
+        """Profile the computation time and FLOPs of a single layer of the model on a given input.
 
         Args:
             m (torch.nn.Module): The layer to be profiled.
@@ -266,8 +243,7 @@ class BaseModel(torch.nn.Module):
             LOGGER.info(f"{sum(dt):10.2f} {'-':>10s} {'-':>10s}  Total")
 
     def fuse(self, verbose=True):
-        """
-        Fuse the `Conv2d()` and `BatchNorm2d()` layers of the model into a single layer for improved computation
+        """Fuse the `Conv2d()` and `BatchNorm2d()` layers of the model into a single layer for improved computation
         efficiency.
 
         Returns:
@@ -300,8 +276,7 @@ class BaseModel(torch.nn.Module):
         return self
 
     def is_fused(self, thresh=10):
-        """
-        Check if the model has less than a certain threshold of BatchNorm layers.
+        """Check if the model has less than a certain threshold of BatchNorm layers.
 
         Args:
             thresh (int, optional): The threshold number of BatchNorm layers.
@@ -313,8 +288,7 @@ class BaseModel(torch.nn.Module):
         return sum(isinstance(v, bn) for v in self.modules()) < thresh  # True if < 'thresh' BatchNorm layers in model
 
     def info(self, detailed=False, verbose=True, imgsz=640):
-        """
-        Print model information.
+        """Print model information.
 
         Args:
             detailed (bool): If True, prints out detailed information about the model.
@@ -324,8 +298,7 @@ class BaseModel(torch.nn.Module):
         return model_info(self, detailed=detailed, verbose=verbose, imgsz=imgsz)
 
     def _apply(self, fn):
-        """
-        Apply a function to all tensors in the model that are not parameters or registered buffers.
+        """Apply a function to all tensors in the model that are not parameters or registered buffers.
 
         Args:
             fn (function): The function to apply to the model.
@@ -344,8 +317,7 @@ class BaseModel(torch.nn.Module):
         return self
 
     def load(self, weights, verbose=True):
-        """
-        Load weights into the model.
+        """Load weights into the model.
 
         Args:
             weights (dict | torch.nn.Module): The pre-trained weights to be loaded.
@@ -370,8 +342,7 @@ class BaseModel(torch.nn.Module):
             LOGGER.info(f"Transferred {len_updated_csd}/{len(self.model.state_dict())} items from pretrained weights")
 
     def loss(self, batch, preds=None):
-        """
-        Compute loss.
+        """Compute loss.
 
         Args:
             batch (dict): Batch to compute loss on.
@@ -389,11 +360,10 @@ class BaseModel(torch.nn.Module):
 
 
 class DetectionModel(BaseModel):
-    """
-    YOLO detection model.
+    """YOLO detection model.
 
-    This class implements the YOLO detection architecture, handling model initialization, forward pass,
-    augmented inference, and loss computation for object detection tasks.
+    This class implements the YOLO detection architecture, handling model initialization, forward pass, augmented
+    inference, and loss computation for object detection tasks.
 
     Attributes:
         yaml (dict): Model configuration dictionary.
@@ -418,8 +388,7 @@ class DetectionModel(BaseModel):
     """
 
     def __init__(self, cfg="yolo11n.yaml", ch=3, nc=None, verbose=True):
-        """
-        Initialize the YOLO detection model with the given config and parameters.
+        """Initialize the YOLO detection model with the given config and parameters.
 
         Args:
             cfg (str | dict): Model configuration file path or dictionary.
@@ -475,8 +444,7 @@ class DetectionModel(BaseModel):
             LOGGER.info("")
 
     def _predict_augment(self, x):
-        """
-        Perform augmentations on input image x and return augmented inference and train outputs.
+        """Perform augmentations on input image x and return augmented inference and train outputs.
 
         Args:
             x (torch.Tensor): Input image tensor.
@@ -501,8 +469,7 @@ class DetectionModel(BaseModel):
 
     @staticmethod
     def _descale_pred(p, flips, scale, img_size, dim=1):
-        """
-        De-scale predictions following augmented inference (inverse operation).
+        """De-scale predictions following augmented inference (inverse operation).
 
         Args:
             p (torch.Tensor): Predictions tensor.
@@ -523,8 +490,7 @@ class DetectionModel(BaseModel):
         return torch.cat((x, y, wh, cls), dim)
 
     def _clip_augmented(self, y):
-        """
-        Clip YOLO augmented inference tails.
+        """Clip YOLO augmented inference tails.
 
         Args:
             y (List[torch.Tensor]): List of detection tensors.
@@ -547,11 +513,10 @@ class DetectionModel(BaseModel):
 
 
 class OBBModel(DetectionModel):
-    """
-    YOLO Oriented Bounding Box (OBB) model.
+    """YOLO Oriented Bounding Box (OBB) model.
 
-    This class extends DetectionModel to handle oriented bounding box detection tasks, providing specialized
-    loss computation for rotated object detection.
+    This class extends DetectionModel to handle oriented bounding box detection tasks, providing specialized loss
+    computation for rotated object detection.
 
     Methods:
         __init__: Initialize YOLO OBB model.
@@ -564,8 +529,7 @@ class OBBModel(DetectionModel):
     """
 
     def __init__(self, cfg="yolo11n-obb.yaml", ch=3, nc=None, verbose=True):
-        """
-        Initialize YOLO OBB model with given config and parameters.
+        """Initialize YOLO OBB model with given config and parameters.
 
         Args:
             cfg (str | dict): Model configuration file path or dictionary.
@@ -581,11 +545,10 @@ class OBBModel(DetectionModel):
 
 
 class SegmentationModel(DetectionModel):
-    """
-    YOLO segmentation model.
+    """YOLO segmentation model.
 
-    This class extends DetectionModel to handle instance segmentation tasks, providing specialized
-    loss computation for pixel-level object detection and segmentation.
+    This class extends DetectionModel to handle instance segmentation tasks, providing specialized loss computation for
+    pixel-level object detection and segmentation.
 
     Methods:
         __init__: Initialize YOLO segmentation model.
@@ -598,8 +561,7 @@ class SegmentationModel(DetectionModel):
     """
 
     def __init__(self, cfg="yolo11n-seg.yaml", ch=3, nc=None, verbose=True):
-        """
-        Initialize Ultralytics YOLO segmentation model with given config and parameters.
+        """Initialize Ultralytics YOLO segmentation model with given config and parameters.
 
         Args:
             cfg (str | dict): Model configuration file path or dictionary.
@@ -615,11 +577,10 @@ class SegmentationModel(DetectionModel):
 
 
 class PoseModel(DetectionModel):
-    """
-    YOLO pose model.
+    """YOLO pose model.
 
-    This class extends DetectionModel to handle human pose estimation tasks, providing specialized
-    loss computation for keypoint detection and pose estimation.
+    This class extends DetectionModel to handle human pose estimation tasks, providing specialized loss computation for
+    keypoint detection and pose estimation.
 
     Attributes:
         kpt_shape (tuple): Shape of keypoints data (num_keypoints, num_dimensions).
@@ -635,8 +596,7 @@ class PoseModel(DetectionModel):
     """
 
     def __init__(self, cfg="yolo11n-pose.yaml", ch=3, nc=None, data_kpt_shape=(None, None), verbose=True):
-        """
-        Initialize Ultralytics YOLO Pose model.
+        """Initialize Ultralytics YOLO Pose model.
 
         Args:
             cfg (str | dict): Model configuration file path or dictionary.
@@ -658,11 +618,10 @@ class PoseModel(DetectionModel):
 
 
 class ClassificationModel(BaseModel):
-    """
-    YOLO classification model.
+    """YOLO classification model.
 
-    This class implements the YOLO classification architecture for image classification tasks,
-    providing model initialization, configuration, and output reshaping capabilities.
+    This class implements the YOLO classification architecture for image classification tasks, providing model
+    initialization, configuration, and output reshaping capabilities.
 
     Attributes:
         yaml (dict): Model configuration dictionary.
@@ -683,8 +642,7 @@ class ClassificationModel(BaseModel):
     """
 
     def __init__(self, cfg="yolo11n-cls.yaml", ch=3, nc=None, verbose=True):
-        """
-        Initialize ClassificationModel with YAML, channels, number of classes, verbose flag.
+        """Initialize ClassificationModel with YAML, channels, number of classes, verbose flag.
 
         Args:
             cfg (str | dict): Model configuration file path or dictionary.
@@ -696,8 +654,7 @@ class ClassificationModel(BaseModel):
         self._from_yaml(cfg, ch, nc, verbose)
 
     def _from_yaml(self, cfg, ch, nc, verbose):
-        """
-        Set Ultralytics YOLO model configurations and define the model architecture.
+        """Set Ultralytics YOLO model configurations and define the model architecture.
 
         Args:
             cfg (str | dict): Model configuration file path or dictionary.
@@ -721,8 +678,7 @@ class ClassificationModel(BaseModel):
 
     @staticmethod
     def reshape_outputs(model, nc):
-        """
-        Update a TorchVision classification model to class count 'n' if required.
+        """Update a TorchVision classification model to class count 'n' if required.
 
         Args:
             model (torch.nn.Module): Model to update.
@@ -754,8 +710,7 @@ class ClassificationModel(BaseModel):
 
 
 class RTDETRDetectionModel(DetectionModel):
-    """
-    RTDETR (Real-time DEtection and Tracking using Transformers) Detection Model class.
+    """RTDETR (Real-time DEtection and Tracking using Transformers) Detection Model class.
 
     This class is responsible for constructing the RTDETR architecture, defining loss functions, and facilitating both
     the training and inference processes. RTDETR is an object detection and tracking model that extends from the
@@ -778,8 +733,7 @@ class RTDETRDetectionModel(DetectionModel):
     """
 
     def __init__(self, cfg="rtdetr-l.yaml", ch=3, nc=None, verbose=True):
-        """
-        Initialize the RTDETRDetectionModel.
+        """Initialize the RTDETRDetectionModel.
 
         Args:
             cfg (str | dict): Configuration file name or path.
@@ -796,8 +750,7 @@ class RTDETRDetectionModel(DetectionModel):
         return RTDETRDetectionLoss(nc=self.nc, use_vfl=True)
 
     def loss(self, batch, preds=None):
-        """
-        Compute the loss for the given batch of data.
+        """Compute the loss for the given batch of data.
 
         Args:
             batch (dict): Dictionary containing image and label data.
@@ -842,8 +795,7 @@ class RTDETRDetectionModel(DetectionModel):
         )
 
     def predict(self, x, profile=False, visualize=False, batch=None, augment=False, embed=None):
-        """
-        Perform a forward pass through the model.
+        """Perform a forward pass through the model.
 
         Args:
             x (torch.Tensor): The input tensor.
@@ -878,11 +830,10 @@ class RTDETRDetectionModel(DetectionModel):
 
 
 class WorldModel(DetectionModel):
-    """
-    YOLOv8 World Model.
+    """YOLOv8 World Model.
 
-    This class implements the YOLOv8 World model for open-vocabulary object detection, supporting text-based
-    class specification and CLIP model integration for zero-shot detection capabilities.
+    This class implements the YOLOv8 World model for open-vocabulary object detection, supporting text-based class
+    specification and CLIP model integration for zero-shot detection capabilities.
 
     Attributes:
         txt_feats (torch.Tensor): Text feature embeddings for classes.
@@ -903,8 +854,7 @@ class WorldModel(DetectionModel):
     """
 
     def __init__(self, cfg="yolov8s-world.yaml", ch=3, nc=None, verbose=True):
-        """
-        Initialize YOLOv8 world model with given config and parameters.
+        """Initialize YOLOv8 world model with given config and parameters.
 
         Args:
             cfg (str | dict): Model configuration file path or dictionary.
@@ -917,8 +867,7 @@ class WorldModel(DetectionModel):
         super().__init__(cfg=cfg, ch=ch, nc=nc, verbose=verbose)
 
     def set_classes(self, text, batch=80, cache_clip_model=True):
-        """
-        Set classes in advance so that model could do offline-inference without clip model.
+        """Set classes in advance so that model could do offline-inference without clip model.
 
         Args:
             text (List[str]): List of class names.
@@ -929,8 +878,7 @@ class WorldModel(DetectionModel):
         self.model[-1].nc = len(text)
 
     def get_text_pe(self, text, batch=80, cache_clip_model=True):
-        """
-        Set classes in advance so that model could do offline-inference without clip model.
+        """Set classes in advance so that model could do offline-inference without clip model.
 
         Args:
             text (List[str]): List of class names.
@@ -953,8 +901,7 @@ class WorldModel(DetectionModel):
         return txt_feats.reshape(-1, len(text), txt_feats.shape[-1])
 
     def predict(self, x, profile=False, visualize=False, txt_feats=None, augment=False, embed=None):
-        """
-        Perform a forward pass through the model.
+        """Perform a forward pass through the model.
 
         Args:
             x (torch.Tensor): The input tensor.
@@ -998,8 +945,7 @@ class WorldModel(DetectionModel):
         return x
 
     def loss(self, batch, preds=None):
-        """
-        Compute loss.
+        """Compute loss.
 
         Args:
             batch (dict): Batch to compute loss on.
@@ -1014,11 +960,10 @@ class WorldModel(DetectionModel):
 
 
 class YOLOEModel(DetectionModel):
-    """
-    YOLOE detection model.
+    """YOLOE detection model.
 
-    This class implements the YOLOE architecture for efficient object detection with text and visual prompts,
-    supporting both prompt-based and prompt-free inference modes.
+    This class implements the YOLOE architecture for efficient object detection with text and visual prompts, supporting
+    both prompt-based and prompt-free inference modes.
 
     Attributes:
         pe (torch.Tensor): Prompt embeddings for classes.
@@ -1042,8 +987,7 @@ class YOLOEModel(DetectionModel):
     """
 
     def __init__(self, cfg="yoloe-v8s.yaml", ch=3, nc=None, verbose=True):
-        """
-        Initialize YOLOE model with given config and parameters.
+        """Initialize YOLOE model with given config and parameters.
 
         Args:
             cfg (str | dict): Model configuration file path or dictionary.
@@ -1055,8 +999,7 @@ class YOLOEModel(DetectionModel):
 
     @smart_inference_mode()
     def get_text_pe(self, text, batch=80, cache_clip_model=False, without_reprta=False):
-        """
-        Set classes in advance so that model could do offline-inference without clip model.
+        """Set classes in advance so that model could do offline-inference without clip model.
 
         Args:
             text (List[str]): List of class names.
@@ -1089,8 +1032,7 @@ class YOLOEModel(DetectionModel):
 
     @smart_inference_mode()
     def get_visual_pe(self, img, visual):
-        """
-        Get visual embeddings.
+        """Get visual embeddings.
 
         Args:
             img (torch.Tensor): Input image tensor.
@@ -1102,8 +1044,7 @@ class YOLOEModel(DetectionModel):
         return self(img, vpe=visual, return_vpe=True)
 
     def set_vocab(self, vocab, names):
-        """
-        Set vocabulary for the prompt-free model.
+        """Set vocabulary for the prompt-free model.
 
         Args:
             vocab (nn.ModuleList): List of vocabulary items.
@@ -1131,8 +1072,7 @@ class YOLOEModel(DetectionModel):
         self.names = check_class_names(names)
 
     def get_vocab(self, names):
-        """
-        Get fused vocabulary layer from the model.
+        """Get fused vocabulary layer from the model.
 
         Args:
             names (list): List of class names.
@@ -1157,8 +1097,7 @@ class YOLOEModel(DetectionModel):
         return vocab
 
     def set_classes(self, names, embeddings):
-        """
-        Set classes in advance so that model could do offline-inference without clip model.
+        """Set classes in advance so that model could do offline-inference without clip model.
 
         Args:
             names (List[str]): List of class names.
@@ -1173,8 +1112,7 @@ class YOLOEModel(DetectionModel):
         self.names = check_class_names(names)
 
     def get_cls_pe(self, tpe, vpe):
-        """
-        Get class positional embeddings.
+        """Get class positional embeddings.
 
         Args:
             tpe (torch.Tensor, optional): Text positional embeddings.
@@ -1197,8 +1135,7 @@ class YOLOEModel(DetectionModel):
     def predict(
         self, x, profile=False, visualize=False, tpe=None, augment=False, embed=None, vpe=None, return_vpe=False
     ):
-        """
-        Perform a forward pass through the model.
+        """Perform a forward pass through the model.
 
         Args:
             x (torch.Tensor): The input tensor.
@@ -1245,8 +1182,7 @@ class YOLOEModel(DetectionModel):
         return x
 
     def loss(self, batch, preds=None):
-        """
-        Compute loss.
+        """Compute loss.
 
         Args:
             batch (dict): Batch to compute loss on.
@@ -1264,11 +1200,10 @@ class YOLOEModel(DetectionModel):
 
 
 class YOLOESegModel(YOLOEModel, SegmentationModel):
-    """
-    YOLOE segmentation model.
+    """YOLOE segmentation model.
 
-    This class extends YOLOEModel to handle instance segmentation tasks with text and visual prompts,
-    providing specialized loss computation for pixel-level object detection and segmentation.
+    This class extends YOLOEModel to handle instance segmentation tasks with text and visual prompts, providing
+    specialized loss computation for pixel-level object detection and segmentation.
 
     Methods:
         __init__: Initialize YOLOE segmentation model.
@@ -1281,8 +1216,7 @@ class YOLOESegModel(YOLOEModel, SegmentationModel):
     """
 
     def __init__(self, cfg="yoloe-v8s-seg.yaml", ch=3, nc=None, verbose=True):
-        """
-        Initialize YOLOE segmentation model with given config and parameters.
+        """Initialize YOLOE segmentation model with given config and parameters.
 
         Args:
             cfg (str | dict): Model configuration file path or dictionary.
@@ -1293,8 +1227,7 @@ class YOLOESegModel(YOLOEModel, SegmentationModel):
         super().__init__(cfg=cfg, ch=ch, nc=nc, verbose=verbose)
 
     def loss(self, batch, preds=None):
-        """
-        Compute loss.
+        """Compute loss.
 
         Args:
             batch (dict): Batch to compute loss on.
@@ -1312,11 +1245,10 @@ class YOLOESegModel(YOLOEModel, SegmentationModel):
 
 
 class Ensemble(torch.nn.ModuleList):
-    """
-    Ensemble of models.
+    """Ensemble of models.
 
-    This class allows combining multiple YOLO models into an ensemble for improved performance through
-    model averaging or other ensemble techniques.
+    This class allows combining multiple YOLO models into an ensemble for improved performance through model averaging
+    or other ensemble techniques.
 
     Methods:
         __init__: Initialize an ensemble of models.
@@ -1335,8 +1267,7 @@ class Ensemble(torch.nn.ModuleList):
         super().__init__()
 
     def forward(self, x, augment=False, profile=False, visualize=False):
-        """
-        Generate the YOLO network's final layer.
+        """Generate the YOLO network's final layer.
 
         Args:
             x (torch.Tensor): Input tensor.
@@ -1360,12 +1291,11 @@ class Ensemble(torch.nn.ModuleList):
 
 @contextlib.contextmanager
 def temporary_modules(modules=None, attributes=None):
-    """
-    Context manager for temporarily adding or modifying modules in Python's module cache (`sys.modules`).
+    """Context manager for temporarily adding or modifying modules in Python's module cache (`sys.modules`).
 
-    This function can be used to change the module paths during runtime. It's useful when refactoring code,
-    where you've moved a module from one location to another, but you still want to support the old import
-    paths for backwards compatibility.
+    This function can be used to change the module paths during runtime. It's useful when refactoring code, where you've
+    moved a module from one location to another, but you still want to support the old import paths for backwards
+    compatibility.
 
     Args:
         modules (dict, optional): A dictionary mapping old module paths to new module paths.
@@ -1376,7 +1306,7 @@ def temporary_modules(modules=None, attributes=None):
         >>> import old.module  # this will now import new.module
         >>> from old.module import attribute  # this will now import new.module.attribute
 
-    Note:
+    Notes:
         The changes are only in effect inside the context manager and are undone once the context manager exits.
         Be aware that directly manipulating `sys.modules` can lead to unpredictable results, especially in larger
         applications or libraries. Use this function with caution.
@@ -1423,8 +1353,7 @@ class SafeUnpickler(pickle.Unpickler):
     """Custom Unpickler that replaces unknown classes with SafeClass."""
 
     def find_class(self, module, name):
-        """
-        Attempt to find a class, returning SafeClass if not among safe modules.
+        """Attempt to find a class, returning SafeClass if not among safe modules.
 
         Args:
             module (str): Module name.
@@ -1449,10 +1378,9 @@ class SafeUnpickler(pickle.Unpickler):
 
 
 def torch_safe_load(weight, safe_only=False):
-    """
-    Attempt to load a PyTorch model with the torch.load() function. If a ModuleNotFoundError is raised, it catches the
-    error, logs a warning message, and attempts to install the missing module via the check_requirements() function.
-    After installation, the function again attempts to load the model using torch.load().
+    """Attempt to load a PyTorch model with the torch.load() function. If a ModuleNotFoundError is raised, it catches
+    the error, logs a warning message, and attempts to install the missing module via the check_requirements()
+    function. After installation, the function again attempts to load the model using torch.load().
 
     Args:
         weight (str): The file path of the PyTorch model.
@@ -1531,8 +1459,7 @@ def torch_safe_load(weight, safe_only=False):
 
 
 def attempt_load_weights(weights, device=None, inplace=True, fuse=False):
-    """
-    Load an ensemble of models weights=[a,b,c] or a single model weights=[a] or weights=a.
+    """Load an ensemble of models weights=[a,b,c] or a single model weights=[a] or weights=a.
 
     Args:
         weights (str | List[str]): Model weights path(s).
@@ -1580,8 +1507,7 @@ def attempt_load_weights(weights, device=None, inplace=True, fuse=False):
 
 
 def attempt_load_one_weight(weight, device=None, inplace=True, fuse=False):
-    """
-    Load a single model weights.
+    """Load a single model weights.
 
     Args:
         weight (str): Model weight path.
@@ -1618,8 +1544,7 @@ def attempt_load_one_weight(weight, device=None, inplace=True, fuse=False):
 
 
 def parse_model(d, ch, verbose=True):
-    """
-    Parse a YOLO model.yaml dictionary into a PyTorch model.
+    """Parse a YOLO model.yaml dictionary into a PyTorch model.
 
     Args:
         d (dict): Model dictionary.
@@ -1630,7 +1555,6 @@ def parse_model(d, ch, verbose=True):
         model (torch.nn.Sequential): PyTorch model.
         save (list): Sorted list of output layers.
     """
-
     scale = None  # 添加这行
 
     import ast
@@ -1643,7 +1567,7 @@ def parse_model(d, ch, verbose=True):
     if scales:
         scale = d.get("scale")
         if not scale:
-            scale = tuple(scales.keys())[0]
+            scale = next(iter(scales.keys()))
             LOGGER.warning(f"no model scale passed. Assuming scale='{scale}'.")
         depth, width, max_channels = scales[scale]
 
@@ -1664,10 +1588,8 @@ def parse_model(d, ch, verbose=True):
             GhostConv,
             Bottleneck,
             GhostBottleneck,
-
             C3k2_GhostConv,
             C3k2_ODConv,
-
             SPP,
             SPPF,
             C2fPSA,
@@ -1679,43 +1601,31 @@ def parse_model(d, ch, verbose=True):
             C2,
             C2f,
             C3k2,
-
             CBAM,  # 添加CBAM模块
             Bottleneck_CBAM,  # 添加带CBAM的Bottleneck
             C3k2_CBAM,  # 添加带CBAM的版本
-
-            ECA, 
-            Bottleneck_ECA, 
+            ECA,
+            Bottleneck_ECA,
             C3k_ECA,
             C3k2_ECA,
-
-
             EMA,
             Bottleneck_EMA,
             C3k2_EMA,
             C3k2_EMA,
-
-
             # slim-neck相关模块
-            GSConv, 
-            GSBottleneck, 
+            GSConv,
+            GSBottleneck,
             GSBottleneck_EMA,
             VoV_GSCSP,
             VoV_GSCSP_EMA,
-
-
             # bifpn相关
             BiFPN_Concat,
             Conv2d_BN,
-
-
             # SimAM相关
             SimAM,
             C3k_SimAM,
             Bottleneck_SimAM,
             C3k_SimAM,
-
-
             RepNCSPELAN4,
             ELAN1,
             ADown,
@@ -1742,11 +1652,8 @@ def parse_model(d, ch, verbose=True):
             C2,
             C2f,
             C3k2,
-
             C3k2_CBAM,  # 新增：带CBAM的版本也支持repeat
-            
             C3k2_ECA,
-
             C2fAttn,
             C3,
             C3TR,
@@ -1759,8 +1666,6 @@ def parse_model(d, ch, verbose=True):
             A2C2f,
         }
     )
-
-
 
     for i, (f, n, m, args) in enumerate(d["backbone"] + d["head"]):  # from, number, module, args
         m = (
@@ -1775,17 +1680,11 @@ def parse_model(d, ch, verbose=True):
                 with contextlib.suppress(ValueError):
                     args[j] = locals()[a] if a in locals() else ast.literal_eval(a)
 
-
-
-
         # -------------------------- 新增调试打印代码 --------------------------
         # 打印当前层的索引、模块名、输入来源、输出通道
         # layer_name = m.__name__ if hasattr(m, '__name__') else str(m)
         # print(f"Layer [{i}]: type={layer_name}, from={f}, out_ch={ch[-1]}")  # ch[-1]是当前层输出通道
         # ----------------------------------------------------------------------
-
-
-
 
         n = n_ = max(round(n * depth), 1) if n > 1 else n  # depth gain
         if m in base_modules:
@@ -1795,7 +1694,7 @@ def parse_model(d, ch, verbose=True):
             if isinstance(f, list):
                 # 对于多输入模块，取第一个输入的通道数
                 c1 = ch[f[0]]
-                
+
                 # 特殊处理 BiFPN_Concat 和其他多输入模块
                 if m in (BiFPN_Concat,):
                     # BiFPN_Concat 会自适应处理通道数，所以输出通道数与输入相同
@@ -1809,11 +1708,6 @@ def parse_model(d, ch, verbose=True):
                 # 单输入模块的正常处理
                 c1 = ch[f]
                 c2 = args[0]
-
-
-
-
-
 
             if c2 != nc:  # if c2 not equal to number of classes (i.e. for Classify() output)
                 c2 = make_divisible(min(c2, max_channels) * width, 8)
@@ -1851,23 +1745,29 @@ def parse_model(d, ch, verbose=True):
         elif m is Concat:
             c2 = sum(ch[x] for x in f)
 
-        
         elif m is PConv:
             c1 = ch[f]
             args = [c1, *args[0:]]
-
 
         # # 添加bifpn相关
         # elif m is BiFPN_Concat:
         #     c2 = max([ch[x] for x in f])
 
-
-
-
         elif m in frozenset(
-            {Detect, WorldDetect, YOLOEDetect, Segment, YOLOESegment, Pose, OBB, ImagePoolingAttn, v10Detect, Detect_ASFF, DyHeadDetect}
+            {
+                Detect,
+                WorldDetect,
+                YOLOEDetect,
+                Segment,
+                YOLOESegment,
+                Pose,
+                OBB,
+                ImagePoolingAttn,
+                v10Detect,
+                Detect_ASFF,
+                DyHeadDetect,
+            }
         ):
-            
             print(f"当前处理层:m={m.__name__}, from参数f={f}, ch列表长度={len(ch)}")
             print(f"ch列表内容(索引对应层输出通道):{ch}")
 
@@ -1896,7 +1796,7 @@ def parse_model(d, ch, verbose=True):
         m_.np = sum(x.numel() for x in m_.parameters())  # number params
         m_.i, m_.f, m_.type = i, f, t  # attach index, 'from' index, type
         if verbose:
-            LOGGER.info(f"{i:>3}{str(f):>20}{n_:>3}{m_.np:10.0f}  {t:<45}{str(args):<30}")  # print
+            LOGGER.info(f"{i:>3}{f!s:>20}{n_:>3}{m_.np:10.0f}  {t:<45}{args!s:<30}")  # print
         save.extend(x % i for x in ([f] if isinstance(f, int) else f) if x != -1)  # append to savelist
         layers.append(m_)
         if i == 0:
@@ -1906,8 +1806,7 @@ def parse_model(d, ch, verbose=True):
 
 
 def yaml_model_load(path):
-    """
-    Load a YOLOv8 model from a YAML file.
+    """Load a YOLOv8 model from a YAML file.
 
     Args:
         path (str | Path): Path to the YAML file.
@@ -1930,8 +1829,7 @@ def yaml_model_load(path):
 
 
 def guess_model_scale(model_path):
-    """
-    Extract the size character n, s, m, l, or x of the model's scale from the model path.
+    """Extract the size character n, s, m, l, or x of the model's scale from the model path.
 
     Args:
         model_path (str | Path): The path to the YOLO model's YAML file.
@@ -1940,14 +1838,13 @@ def guess_model_scale(model_path):
         (str): The size character of the model's scale (n, s, m, l, or x).
     """
     try:
-        return re.search(r"yolo(e-)?[v]?\d+([nslmx])", Path(model_path).stem).group(2)  # noqa
+        return re.search(r"yolo(e-)?[v]?\d+([nslmx])", Path(model_path).stem).group(2)
     except AttributeError:
         return ""
 
 
 def guess_model_task(model):
-    """
-    Guess the task of a PyTorch model from its architecture or configuration.
+    """Guess the task of a PyTorch model from its architecture or configuration.
 
     Args:
         model (torch.nn.Module | dict): PyTorch model or model configuration in YAML format.

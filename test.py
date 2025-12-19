@@ -1,3 +1,5 @@
+# Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
+
 from ultralytics import YOLO
 
 # 加载模型
@@ -14,7 +16,7 @@ results = model("F:/github/ultralytics-main/ultralytics/assets/000001_0.jpg", sa
 # results = model(source=0)
 
 # 训练
-# model.train(data="coco8.yaml", epochs=100)  
+# model.train(data="coco8.yaml", epochs=100)
 
 # 导出模型（如ONNX）
 # model.export(format="onnx")

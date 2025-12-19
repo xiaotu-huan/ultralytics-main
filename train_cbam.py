@@ -1,20 +1,15 @@
+# Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
+
 from ultralytics import YOLO
 
 # 构建模型并加载预训练权重
-model = YOLO("F:/github/ultralytics-main/ultralytics/cfg/models/11/yolo11n_cbam.yaml")  
-model.load('yolo11n.pt') 
-
+model = YOLO("F:/github/ultralytics-main/ultralytics/cfg/models/11/yolo11n_cbam.yaml")
+model.load("yolo11n.pt")
 
 
 #  开始训练！
 #  现在，主要训练的是未被冻结的层：CBAM模块、Neck、Head等。
-model.train(
-    data="./pipeline.yaml",  
-    epochs=100,  
-    imgsz=640,   
-    batch=32,       
-    name='yolo11n_cbam_pipe_defect_detection'  
-)
+model.train(data="./pipeline.yaml", epochs=100, imgsz=640, batch=32, name="yolo11n_cbam_pipe_defect_detection")
 
 
 # # 检查官方模型
@@ -25,7 +20,6 @@ model.train(
 # # 检查您的模型
 # model_yours = YOLO("F:/github/ultralytics-main/ultralytics/cfg/models/11/yolo11n_cbam.yaml")
 # print(model_yours.model)
-
 
 
 # from ultralytics import YOLO
